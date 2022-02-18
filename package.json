@@ -1,0 +1,10 @@
+{
+  "name": "pm",
+  "type": "module",
+  "bin": {
+    "pm": "./bin.js"
+  },
+  "scripts": {
+    "preinstall": "// check to see if using npm then throw error or use our pm instead"
+  }
+}
