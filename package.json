@@ -1,10 +1,7 @@
 {
-  "name": "pm",
+  "name": "toastpack",
   "type": "module",
   "bin": {
-    "pm": "./bin.js"
-  },
-  "scripts": {
-    "preinstall": "// check to see if using npm then throw error or use our pm instead"
+    "toastpack": "./bin.js"
   }
 }

@@ -5,13 +5,13 @@ import { Command } from './lib/commander/index.js';
 const program = new Command();
 
 program
-  .name('pm')
+  .name('toastpack')
   .description('A command line tool for managing your dependencies')
   .version('0.0.1');
 
 program
   .command('install <package>')
-  .description('isntall a package')
+  .description('install a package')
   .action((pkg) => {
     console.log(pkg);
   });
