@@ -3,3 +3,5 @@ import npmPlugin from "./lib/npm/index.js";
 
 const api = new Api();
 api.register(npmPlugin);
+
+console.log(api)
