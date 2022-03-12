@@ -4,4 +4,4 @@ import npmPlugin from "./packages/@toastpack/npmPlugin/index.js";
 const api = new Api();
 api.register(npmPlugin);
 
-console.log(await api.install('npm', 'pkg', 'wgyt/pkg'))
+console.log(await api.install('npm', 'npm', 'latest'))
