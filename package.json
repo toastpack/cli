@@ -1,7 +1,4 @@
 {
   "name": "toastpack",
-  "type": "module",
-  "bin": {
-    "toastpack": "./bin.js"
-  }
+  "type": "module"
 }

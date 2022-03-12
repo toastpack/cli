@@ -1,7 +1,7 @@
-import { Api } from "./lib/plugins/index.js";
-import npmPlugin from "./lib/npm/index.js";
+import { Api } from "./packages/@toastpack/api/index.js";
+import npmPlugin from "./packages/@toastpack/npmPlugin/index.js";
 
 const api = new Api();
 api.register(npmPlugin);
 
-console.log(api)
+console.log(await api.install('npm', 'pkg', 'wgyt/pkg'))
