@@ -5,7 +5,6 @@ import { mkdir, writeFile } from 'fs/promises';
 import { spawnSync } from 'child_process';
 import { Plugin } from '../api/index.js';
 import packageDotJson from '../packageDotJson/index.js';
-import { maxSatisfying, valid, validRange } from '../../semver/semver.cjs';
 
 var ghshorthand =
   /([a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38})\/([a-z\d](?:[a-z\d]|-_\.(?=[a-z\d])){0,99})(#.+)?/i;
@@ -18,8 +17,9 @@ var plugin = new Plugin(
 
 plugin.registerSource(
   'npm',
-  async (pkg, ver = 'latest') => {
-    let m;ghshorthand
+  async (pkg, ver = 'latest', api) => {
+    let m;
+    ghshorthand;
     if ((m = ghshorthand.exec(ver)) !== null) {
       return {
         success: true,
@@ -36,7 +36,7 @@ plugin.registerSource(
     }
     // TODO: support file stuff
     var data = await (
-      await fetch(`https://npmproxy.toastpack.dev/${encodeURI(pkg)}`)
+      await fetch(`https://npmproxy.toastpack.dev/${encodeURI(pkg)}/${ver}`)
     ).json();
     if (data.error) {
       return {
@@ -48,17 +48,7 @@ plugin.registerSource(
     var tgzpath = join(tempDir, `${pkg}.tgz`);
     await writeFile(
       tgzpath,
-      Buffer.from(
-        await (
-          await fetch(
-            `https://npmProxy.toastpack.dev/${encodeURI(pkg)}/${
-              valid(ver) || validRange(ver)
-                ? maxSatisfying(data.versions, ver)
-                : data.tags[ver]
-            }/tgz`
-          )
-        ).arrayBuffer()
-      )
+      Buffer.from(await (await fetch(data.tgz)).arrayBuffer())
     );
     await mkdir(join(tempDir, pkg));
     spawnSync('tar', [

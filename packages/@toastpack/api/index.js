@@ -13,7 +13,7 @@ class Api {
   install(prefix = 'default', pkg, ver = 'latest') {
     var result;
     try {
-      result = this.sources[prefix](pkg, ver);
+      result = this.sources[prefix](pkg, ver, this);
     } catch (e) {
       result = {
         success: false,
