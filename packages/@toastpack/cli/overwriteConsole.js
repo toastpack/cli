@@ -2,7 +2,7 @@ import Signale from '../../signale/index.js';
 
 const signale = new Signale({
   disabled: false,
-  interactive: true,
+  interactive: false,
   logLevel: 'info',
   scope: 'toastpack',
   stream: process.stdout,
@@ -22,6 +22,4 @@ signale.config({
   uppercaseLabel: false,
 });
 
-globalThis.oldConsole = Object.assign({}, globalThis.console);
-
-globalThis.console = signale;
+export default signale;
