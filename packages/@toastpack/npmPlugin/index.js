@@ -1,4 +1,4 @@
-import { writeFile } from 'fs/promises';
+import { writeFileSync } from 'fs';
 
 export default {
   metadata: {
@@ -20,15 +20,13 @@ export default {
     ).json();
     // if there's an error return it
     if (data.error) {
-      return {
-        success: false,
-        error: data.error,
-      };
+      throw data.error
     }
     // fetch file and save to path provided to us
-    await writeFile(
+    writeFileSync(
       path,
       Buffer.from(await(await fetch(data.tgz)).arrayBuffer())
     );
+    return true;
   },
 };

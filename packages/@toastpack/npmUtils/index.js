@@ -25,4 +25,8 @@ export function packageStringParse(str) {
   };
 }
 
+export function isScoped(str) {
+  return str.startsWith('@');
+}
+
 // todo: make general package.json parser
