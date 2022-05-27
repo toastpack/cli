@@ -1,6 +1,6 @@
 import Signale from '../../signale/index.js';
 
-const signale = new Signale({
+var console = new Signale({
   disabled: false,
   interactive: false,
   logLevel: 'info',
@@ -8,7 +8,7 @@ const signale = new Signale({
   stream: process.stdout,
 });
 
-signale.config({
+console.config({
   displayScope: true,
   displayBadge: true,
   displayDate: false,
@@ -22,4 +22,4 @@ signale.config({
   uppercaseLabel: false,
 });
 
-export default signale;
+export default console;
