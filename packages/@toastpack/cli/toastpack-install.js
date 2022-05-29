@@ -1,16 +1,16 @@
 import console from './overwriteConsole.js';
-import { Command } from "../../commander/index.js";
+import { Command } from '../../commander/index.js';
 import {
   packageStringParse,
-  npmonlylockparse,
+  packageJsonParse,
   isScoped,
-} from "../npmUtils/index.js";
-import Enquirer from "../../enquirer/index.js";
-import { mkdtempSync, existsSync, mkdirSync, cpSync, symlinkSync } from "fs";
-import { join } from "path/posix";
-import { tmpdir, homedir } from "os";
-import { cwd } from "process";
-import { execSync } from "child_process";
+} from '../utils/index.js';
+import Enquirer from '../../enquirer/index.js';
+import { mkdtempSync, existsSync, mkdirSync, cpSync, symlinkSync } from 'fs';
+import { join } from 'path/posix';
+import { tmpdir, homedir } from 'os';
+import { cwd } from 'process';
+import { execSync } from 'child_process';
 import { getPlugins } from './config.js';
 
 const plugins = await getPlugins();
@@ -35,8 +35,8 @@ for (let item of name) {
   var { prefix, packagename, version } = packageStringParse(item);
   var resolvefolder = join(
     homedir(),
-    ".toastpack",
-    "packages",
+    '.toastpack',
+    'packages',
     encodeURIComponent(`${prefix}-${packagename}-${version}`)
   );
   if (existsSync(resolvefolder)) {
@@ -51,7 +51,7 @@ for (let item of name) {
   let plugin = plugins.find((source) => source.metadata.id == prefix);
   if (!plugin) {
     const result = await new Enquirer.AutoComplete({
-      message: "Choose the source to use",
+      message: 'Choose the source to use',
       choices: plugins.map((source) => source.metadata.name),
     }).run();
     prefix = plugins.find((source) => source.metadata.name == result).metadata
@@ -72,7 +72,7 @@ for (let item of name) {
         resolvefolder,
       };
       resolved.push(resolvd);
-      name.push(...npmonlylockparse(folder));
+      name.push(...new packageJsonParse(folder).dependencies(true));
     } catch (e) {
       console.error(e);
     }
@@ -105,7 +105,7 @@ for (let item of name) {
         resolvefolder,
       };
       resolved.push(resolvd);
-      name.push(...npmonlylockparse(folder));
+      name.push(...new packageJsonParse(folder).dependencies(true));
     } catch (e) {
       console.error(e);
     }
@@ -120,16 +120,16 @@ for (let resolvd of resolved) {
   if (resolvd.folder) {
     cpSync(resolvd.folder, resolvd.resolvefolder, { recursive: true });
   }
-  if (!existsSync(join(cwd(), "node_modules"))) {
-    mkdirSync(join(cwd(), "node_modules"));
+  if (!existsSync(join(cwd(), 'node_modules'))) {
+    mkdirSync(join(cwd(), 'node_modules'));
   }
-  if (!existsSync(join(cwd(), "node_modules", resolvd.packagename))) {
+  if (!existsSync(join(cwd(), 'node_modules', resolvd.packagename))) {
     if (isScoped(resolvd.packagename))
-      mkdirSync(join(cwd(), "node_modules", resolvd.packagename, ".."));
+      mkdirSync(join(cwd(), 'node_modules', resolvd.packagename, '..'));
     symlinkSync(
       resolvd.resolvefolder,
-      join(cwd(), "node_modules", resolvd.packagename),
-      "dir"
+      join(cwd(), 'node_modules', resolvd.packagename),
+      'dir'
     );
   }
 }

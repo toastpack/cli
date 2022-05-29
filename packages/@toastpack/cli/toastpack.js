@@ -52,6 +52,6 @@ commander
   .alias('rm')
   .alias('remove')
   .alias('un')
-  .command('config', 'configure toastpack');
+  .command('config', 'opens toastpack config file in default editor');
 
 commander.parse(process.argv);

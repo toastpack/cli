@@ -1,7 +1,6 @@
-'use strict';
 
 const toString = Object.prototype.toString;
-const colors = require('../../ansi-colors/index.cjs');
+const colors = require('../../ansi-colors/index.js');
 let called = false;
 let fns = [];
 

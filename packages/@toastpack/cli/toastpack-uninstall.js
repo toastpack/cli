@@ -1,6 +1,6 @@
 import console from "./overwriteConsole.js";
 import { Command } from "../../commander/index.js";
-import { packageStringParse } from "../npmUtils/index.js";
+import { packageStringParse } from "../utils/index.js";
 import { existsSync, unlinkSync, rmSync } from "fs";
 import { join } from "path/posix";
 import { homedir } from "os";

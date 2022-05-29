@@ -1,36 +1,40 @@
-'use strict';
+const isObject = (val) =>
+  val !== null && typeof val === 'object' && !Array.isArray(val);
 
-const isObject = val => val !== null && typeof val === 'object' && !Array.isArray(val);
-const identity = val => val;
+const ANSI_REGEX =
+  /[\u001b\u009b][[\]#;?()]*(?:(?:(?:[^\W_]*;?[^\W_]*)\u0007)|(?:(?:[0-9]{1,4}(;[0-9]{0,4})*)?[~0-9=<>cf-nqrtyA-PRZ]))/g;
 
-/* eslint-disable no-control-regex */
-// this is a modified version of https://github.com/chalk/ansi-regex (MIT License)
-const ANSI_REGEX = /[\u001b\u009b][[\]#;?()]*(?:(?:(?:[^\W_]*;?[^\W_]*)\u0007)|(?:(?:[0-9]{1,4}(;[0-9]{0,4})*)?[~0-9=<>cf-nqrtyA-PRZ]))/g;
+const hasColor = () => {
+  if (typeof process !== 'undefined') {
+    return process.env.FORCE_COLOR !== '0';
+  }
+  return false;
+};
 
 const create = () => {
-  const colors = { enabled: true, visible: true, styles: {}, keys: {} };
+  const colors = {
+    enabled: hasColor(),
+    visible: true,
+    styles: {},
+    keys: {},
+  };
 
-  if ('FORCE_COLOR' in process.env) {
-    colors.enabled = process.env.FORCE_COLOR !== '0';
-  }
-
-  const ansi = style => {
-    let open = style.open = `\u001b[${style.codes[0]}m`;
-    let close = style.close = `\u001b[${style.codes[1]}m`;
-    let regex = style.regex = new RegExp(`\\u001b\\[${style.codes[1]}m`, 'g');
+  const ansi = (style) => {
+    let open = (style.open = `\u001b[${style.codes[0]}m`);
+    let close = (style.close = `\u001b[${style.codes[1]}m`);
+    let regex = (style.regex = new RegExp(`\\u001b\\[${style.codes[1]}m`, 'g'));
     style.wrap = (input, newline) => {
       if (input.includes(close)) input = input.replace(regex, close + open);
       let output = open + input + close;
-      // see https://github.com/chalk/chalk/pull/92, thanks to the
-      // chalk contributors for this fix. However, we've confirmed that
-      // this issue is also present in Windows terminals
       return newline ? output.replace(/\r*\n/g, `${close}$&${open}`) : output;
     };
     return style;
   };
 
   const wrap = (style, input, newline) => {
-    return typeof style === 'function' ? style(input) : style.wrap(input, newline);
+    return typeof style === 'function'
+      ? style(input)
+      : style.wrap(input, newline);
   };
 
   const style = (input, stack) => {
@@ -59,11 +63,11 @@ const create = () => {
         colors.alias(name, value);
       },
       get() {
-        let color = input => style(input, color.stack);
+        let color = (input) => style(input, color.stack);
         Reflect.setPrototypeOf(color, colors);
         color.stack = this.stack ? this.stack.concat(name) : [name];
         return color;
-      }
+      },
     });
   };
 
@@ -115,7 +119,7 @@ const create = () => {
   define('bgWhiteBright', [107, 49], 'bgBright');
 
   colors.ansiRegex = ANSI_REGEX;
-  colors.hasColor = colors.hasAnsi = str => {
+  colors.hasColor = colors.hasAnsi = (str) => {
     colors.ansiRegex.lastIndex = 0;
     return typeof str === 'string' && str !== '' && colors.ansiRegex.test(str);
   };
@@ -124,7 +128,9 @@ const create = () => {
     let fn = typeof color === 'string' ? colors[color] : color;
 
     if (typeof fn !== 'function') {
-      throw new TypeError('Expected alias to be the name of an existing color (string) or a function');
+      throw new TypeError(
+        'Expected alias to be the name of an existing color (string) or a function'
+      );
     }
 
     if (!fn.stack) {
@@ -140,23 +146,24 @@ const create = () => {
         colors.alias(name, value);
       },
       get() {
-        let color = input => style(input, color.stack);
+        let color = (input) => style(input, color.stack);
         Reflect.setPrototypeOf(color, colors);
         color.stack = this.stack ? this.stack.concat(fn.stack) : fn.stack;
         return color;
-      }
+      },
     });
   };
 
-  colors.theme = custom => {
-    if (!isObject(custom)) throw new TypeError('Expected theme to be an object');
+  colors.theme = (custom) => {
+    if (!isObject(custom))
+      throw new TypeError('Expected theme to be an object');
     for (let name of Object.keys(custom)) {
       colors.alias(name, custom[name]);
     }
     return colors;
   };
 
-  colors.alias('unstyle', str => {
+  colors.alias('unstyle', (str) => {
     if (typeof str === 'string' && str !== '') {
       colors.ansiRegex.lastIndex = 0;
       return str.replace(colors.ansiRegex, '');
@@ -164,14 +171,55 @@ const create = () => {
     return '';
   });
 
-  colors.alias('noop', str => str);
+  colors.alias('noop', (str) => str);
   colors.none = colors.clear = colors.noop;
 
   colors.stripColor = colors.unstyle;
-  colors.symbols = require('./symbols.cjs');
+  colors.symbols = {
+    ballotDisabled: '☒',
+    ballotOff: '☐',
+    ballotOn: '☑',
+    bullet: '•',
+    bulletWhite: '◦',
+    fullBlock: '█',
+    heart: '❤',
+    identicalTo: '≡',
+    line: '─',
+    mark: '※',
+    middot: '·',
+    minus: '－',
+    multiplication: '×',
+    obelus: '÷',
+    pencilDownRight: '✎',
+    pencilRight: '✏',
+    pencilUpRight: '✐',
+    percent: '%',
+    pilcrow2: '❡',
+    pilcrow: '¶',
+    plusMinus: '±',
+    question: '?',
+    section: '§',
+    starsOff: '☆',
+    starsOn: '★',
+    upDownArrow: '↕',
+    ballotCross: '✘',
+    check: '✔',
+    cross: '✖',
+    ellipsisLarge: '⋯',
+    ellipsis: '…',
+    info: 'ℹ',
+    questionFull: '？',
+    questionSmall: '﹖',
+    pointer: isLinux ? '▸' : '❯',
+    pointerSmall: isLinux ? '‣' : '›',
+    radioOff: '◯',
+    radioOn: '◉',
+    warning: '⚠',
+  };
   colors.define = define;
   return colors;
 };
 
 module.exports = create();
 module.exports.create = create;
+

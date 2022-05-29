@@ -1,50 +1,22 @@
-'use strict';
-
-const assert = require('assert');
-const Events = require('events');
-const utils = require('./lib/utils');
-
-/**
- * Create an instance of `Enquirer`.
- *
- * ```js
- * const Enquirer = require('enquirer');
- * const enquirer = new Enquirer();
- * ```
- * @name Enquirer
- * @param {Object} `options` (optional) Options to use with all prompts.
- * @param {Object} `answers` (optional) Answers object to initialize with.
- * @api public
- */
+import assert, { equal } from 'assert';
+import Events from 'events';
+import utils, { merge, isObject, mixinEmitter, defineExport } from './lib/utils.cjs';
+import prompt from './lib/prompt';
+import types from './lib/types';
 
 class Enquirer extends Events {
   constructor(options, answers) {
     super();
-    this.options = utils.merge({}, options);
+    this.options = merge({}, options);
     this.answers = { ...answers };
   }
 
-  /**
-   * Register a custom prompt type.
-   *
-   * ```js
-   * const Enquirer = require('enquirer');
-   * const enquirer = new Enquirer();
-   * enquirer.register('customType', require('./custom-prompt'));
-   * ```
-   * @name register()
-   * @param {String} `type`
-   * @param {Function|Prompt} `fn` `Prompt` class, or a function that returns a `Prompt` class.
-   * @return {Object} Returns the Enquirer instance
-   * @api public
-   */
-
   register(type, fn) {
-    if (utils.isObject(type)) {
+    if (isObject(type)) {
       for (let key of Object.keys(type)) this.register(key, type[key]);
       return this;
     }
-    assert.equal(typeof fn, 'function', 'expected a function');
+    equal(typeof fn, 'function', 'expected a function');
     let name = type.toLowerCase();
     if (fn.prototype instanceof this.Prompt) {
       this.prompts[name] = fn;
@@ -54,32 +26,12 @@ class Enquirer extends Events {
     return this;
   }
 
-  /**
-   * Prompt function that takes a "question" object or array of question objects,
-   * and returns an object with responses from the user.
-   *
-   * ```js
-   * const Enquirer = require('enquirer');
-   * const enquirer = new Enquirer();
-   *
-   * const response = await enquirer.prompt({
-   *   type: 'input',
-   *   name: 'username',
-   *   message: 'What is your username?'
-   * });
-   * console.log(response);
-   * ```
-   * @name prompt()
-   * @param {Array|Object} `questions` Options objects for one or more prompts to run.
-   * @return {Promise} Promise that returns an "answers" object with the user's responses.
-   * @api public
-   */
-
   async prompt(questions = []) {
     for (let question of [].concat(questions)) {
       try {
-        if (typeof question === 'function') question = await question.call(this);
-        await this.ask(utils.merge({}, this.options, question));
+        if (typeof question === 'function')
+          question = await question.call(this);
+        await this.ask(merge({}, this.options, question));
       } catch (err) {
         return Promise.reject(err);
       }
@@ -92,7 +44,7 @@ class Enquirer extends Events {
       question = await question.call(this);
     }
 
-    let opts = utils.merge({}, this.options, question);
+    let opts = merge({}, this.options, question);
     let { type, name } = question;
     let { set, get } = utils;
 
@@ -111,13 +63,12 @@ class Enquirer extends Events {
     prompt.enquirer = this;
 
     if (name) {
-      prompt.on('submit', value => {
+      prompt.on('submit', (value) => {
         this.emit('answer', name, value, prompt);
         set(this.answers, name, value);
       });
     }
 
-    // bubble events
     let emit = prompt.emit.bind(prompt);
     prompt.emit = (...args) => {
       this.emit.call(this, ...args);
@@ -129,7 +80,6 @@ class Enquirer extends Events {
     if (opts.autofill && value != null) {
       prompt.value = prompt.input = value;
 
-      // if "autofill=show" render the prompt, otherwise stay "silent"
       if (opts.autofill === 'show') {
         await prompt.submit();
       }
@@ -139,23 +89,6 @@ class Enquirer extends Events {
 
     return value;
   }
-
-  /**
-   * Use an enquirer plugin.
-   *
-   * ```js
-   * const Enquirer = require('enquirer');
-   * const enquirer = new Enquirer();
-   * const plugin = enquirer => {
-   *   // do stuff to enquire instance
-   * };
-   * enquirer.use(plugin);
-   * ```
-   * @name use()
-   * @param {Function} `plugin` Plugin function that takes an instance of Enquirer.
-   * @return {Object} Returns the Enquirer instance.
-   * @api public
-   */
 
   use(plugin) {
     plugin.call(this, this);
@@ -177,35 +110,16 @@ class Enquirer extends Events {
     this._Prompt = value;
   }
   static get Prompt() {
-    return this._Prompt || require('./lib/prompt');
+    return this._Prompt || prompt;
   }
 
   static get prompts() {
-    return require('./lib/prompts');
+    return prompts;
   }
 
   static get types() {
-    return require('./lib/types');
+    return types;
   }
-
-  /**
-   * Prompt function that takes a "question" object or array of question objects,
-   * and returns an object with responses from the user.
-   *
-   * ```js
-   * const { prompt } = require('enquirer');
-   * const response = await prompt({
-   *   type: 'input',
-   *   name: 'username',
-   *   message: 'What is your username?'
-   * });
-   * console.log(response);
-   * ```
-   * @name Enquirer#prompt
-   * @param {Array|Object} `questions` Options objects for one or more prompts to run.
-   * @return {Promise} Promise that returns an "answers" object with the user's responses.
-   * @api public
-   */
 
   static get prompt() {
     const fn = (questions, ...rest) => {
@@ -217,18 +131,18 @@ class Enquirer extends Events {
       };
       return enquirer.prompt(questions);
     };
-    utils.mixinEmitter(fn, new Events());
+    mixinEmitter(fn, new Events());
     return fn;
   }
 }
 
-utils.mixinEmitter(Enquirer, new Events());
+mixinEmitter(Enquirer, new Events());
 const prompts = Enquirer.prompts;
 
 for (let name of Object.keys(prompts)) {
   let key = name.toLowerCase();
 
-  let run = options => new prompts[name](options).run();
+  let run = (options) => new prompts[name](options).run();
   Enquirer.prompt[key] = run;
   Enquirer[key] = run;
 
@@ -237,8 +151,8 @@ for (let name of Object.keys(prompts)) {
   }
 }
 
-const exp = name => {
-  utils.defineExport(Enquirer, name, () => Enquirer.types[name]);
+const exp = (name) => {
+  defineExport(Enquirer, name, () => Enquirer.types[name]);
 };
 
 exp('ArrayPrompt');
@@ -247,4 +161,4 @@ exp('BooleanPrompt');
 exp('NumberPrompt');
 exp('StringPrompt');
 
-module.exports = Enquirer;
+export default Enquirer;
